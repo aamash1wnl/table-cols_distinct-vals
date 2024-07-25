@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Query Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        label, input, textarea {
+            display: block;
+            margin-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+        }
+        .query-output {
+            white-space: pre-wrap; /* Preserves whitespace formatting */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SQL Query Generator</h1>
+        <label for="inputData">Table Name followed by All Columns (space-separated):</label>
+        <input type="text" id="inputData" placeholder="Enter table name and all columns">
+
+        <label for="includeColumns">Columns to Include (space-separated):</label>
+        <input type="text" id="includeColumns" placeholder="Enter columns to include">
+
+        <button onclick="generateQuery()">Generate Query</button>
+
+        <label for="query">Generated SQL Query:</label>
+        <textarea id="query" class="query-output" readonly></textarea>
+    </div>
+
+    <script>
+        function generateQuery() {
+            // Get input values
+            const inputData = document.getElementById('inputData').value.trim();
+            const includeColumnsData = document.getElementById('includeColumns').value.trim();
+            
+            // Split input into parts
+            const allParts = inputData.split(/\s+/);
+            const tableName = allParts[0];
+            const allColumns = allParts.slice(1);
+            const includeColumns = includeColumnsData.split(/\s+/);
+
+            // Check if at least one column is included
+            if (includeColumns.length === 0) {
+                alert('Please provide at least one column to include.');
+                return;
+            }
+
+            // Generate SQL query
+            let sqlQuery = '';
+            includeColumns.forEach((column, index) => {
+                if (allColumns.includes(column)) {
+                    if (index > 0) sqlQuery += ' UNION ALL\n';
+                    sqlQuery += `SELECT '${column}' AS column_name, CAST(${column} AS TEXT) AS distinct_value\n`;
+                    sqlQuery += `FROM ${tableName}\n`;
+                    sqlQuery += `GROUP BY ${column}`;
+                } else {
+                    alert(`Column '${column}' is not in the list of all columns.`);
+                    return;
+                }
+            });
+
+            // Display query in textarea
+            document.getElementById('query').value = sqlQuery;
+        }
+    </script>
+</body>
+</html>
